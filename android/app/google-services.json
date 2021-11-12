@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "502046244732",
+    "project_id": "kaki-boletos",
+    "storage_bucket": "kaki-boletos.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502046244732:android:43677a4f6918ed2fe46ef9",
+        "android_client_info": {
+          "package_name": "manuelgm.kaki_boletos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "502046244732-i646kvsnd8tf45d9s2eji07ogrc2bkmb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5K9rFVkUCAbLAkCiRbeB4CKEOLSlgsXQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "502046244732-i646kvsnd8tf45d9s2eji07ogrc2bkmb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
