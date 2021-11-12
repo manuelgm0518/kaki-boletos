@@ -13,6 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await initServices();
+
   setScreenColors(statusBar: kPrimaryColor.variants.light, navigationBar: kSecondaryColor);
   runApp(const KakiBoletos());
 }
