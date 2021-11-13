@@ -21,14 +21,22 @@ class RepositoryService extends GetxService {
         for (var element in event.docChanges) {
           final ticket = Ticket.fromMap({'id': element.doc.id, ...element.doc.data()!});
           final index = tickets.indexWhere((element) => element.id == ticket.id);
-          index != -1 ? tickets[index] = ticket : tickets.add(ticket);
+          if (index != -1) {
+            element.type == DocumentChangeType.removed ? tickets.removeAt(index) : tickets[index] = ticket;
+          } else {
+            tickets.add(ticket);
+          }
         }
       });
       _sellersListener = FirebaseFirestore.instance.collection('sellers').snapshots().listen((event) {
         for (var element in event.docChanges) {
           final seller = Seller.fromMap({'id': element.doc.id, ...element.doc.data()!});
           final index = sellers.indexWhere((element) => element.id == seller.id);
-          index != -1 ? sellers[index] = seller : sellers.add(seller);
+          if (index != -1) {
+            element.type == DocumentChangeType.removed ? sellers.removeAt(index) : sellers[index] = seller;
+          } else {
+            sellers.add(seller);
+          }
         }
       });
       Printer.info('Repository loaded');

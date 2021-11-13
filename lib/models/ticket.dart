@@ -15,6 +15,7 @@ class Ticket {
 
   bool get checked => checkedAt != null && checkedBy != null;
   String get sellerName => RepositoryService.to.sellers.singleWhere((element) => element.id == seller, orElse: () => SessionService.to.seller!).name;
+  bool get isFirstDay => showDate.day == 25 && showDate.month == 11;
 
   const Ticket._({
     required this.id,

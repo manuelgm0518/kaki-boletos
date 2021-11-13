@@ -16,6 +16,8 @@ class CustomTextField extends StatefulWidget {
     this.whiteBackground = false,
     this.textArea = false,
     this.inputFormatters,
+    this.readOnly = false,
+    this.onTap,
   }) : super(key: key);
 
   final TextEditingController? controller;
@@ -27,6 +29,8 @@ class CustomTextField extends StatefulWidget {
   final bool textArea;
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
+  final bool readOnly;
+  final void Function()? onTap;
 
   @override
   _CustomTextFieldState createState() => _CustomTextFieldState();
@@ -64,6 +68,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
         child: TextFormField(
           controller: widget.controller,
           keyboardType: widget.textArea ? TextInputType.multiline : widget.keyboardType,
+          readOnly: widget.readOnly,
+          onTap: widget.onTap,
           validator: (value) {
             if (widget.validator != null) {
               final res = widget.validator!(value);

@@ -1,6 +1,9 @@
 import 'package:auto_animated/auto_animated.dart';
+import 'package:collapsible/collapsible.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kaki_boletos/components/custom_button.dart';
+import 'package:kaki_boletos/components/custom_text_field.dart';
 import 'package:kaki_boletos/components/ticket_tile.dart';
 import 'package:kaki_boletos/config/app_themes.dart';
 import 'package:kaki_boletos/pages/main_controller.dart';
@@ -89,10 +92,35 @@ class MainPage extends GetView<MainController> {
                         ).px2,
                         kSpacer,
                         IconButton(
-                            icon: const Icon(UniconsLine.check_circle),
-                            color: controller.onlyChecked.value ? kSuccessColor : Colors.white30,
-                            onPressed: () => controller.onlyChecked.toggle())
+                          icon: const Icon(UniconsLine.filter),
+                          color: Colors.white30,
+                          onPressed: () => controller.showFilters.toggle(),
+                        ).pr1
                       ])).px4,
+                  Obx(() => Collapsible(
+                        collapsed: !controller.showFilters.value,
+                        axis: CollapsibleAxis.vertical,
+                        alignment: Alignment.topCenter,
+                        maintainState: true,
+                        child: Container(
+                          decoration: const BoxDecoration(color: Colors.white24, borderRadius: kRoundedBorder),
+                          padding: kPadding4,
+                          margin: kPadding4,
+                          child: Row(children: [
+                            Row(children: [
+                              const Icon(UniconsLine.calendar_alt, color: Colors.white).pr2,
+                              Text(controller.filterFirstDate.value ? '25 - Nov' : '01 - Dic', style: Get.textTheme.subtitle1?.copyWith(color: Colors.white)),
+                            ]).mouse((() => controller.filterFirstDate.toggle())).expanded(),
+                            Row(children: [
+                              Icon(UniconsLine.check_circle, color: controller.onlyChecked.value ? kSuccessColor : Colors.white).pr2,
+                              Text(
+                                'Escaneados',
+                                style: Get.textTheme.subtitle1?.copyWith(color: controller.onlyChecked.value ? kSuccessColor : Colors.white),
+                              ),
+                            ]).mouse((() => controller.onlyChecked.toggle())).expanded(),
+                          ]),
+                        ),
+                      )),
                   const Divider(color: Colors.white12, thickness: 1, height: 0).px5,
                 ]),
               ),

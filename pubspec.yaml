@@ -38,16 +38,15 @@ dependencies:
   logger: ^1.1.0
   avoid_keyboard: ^0.3.0
   easy_mask: ^2.0.1
-  rxdart: ^0.27.0
 
   unicons: ^2.0.2
   lottie: ^1.2.1
   derived_colors: ^0.3.0
   auto_animated: ^3.0.1
   animated_size_and_fade: ^3.0.0
-  tab_indicator_styler: ^2.0.0
   sliver_tools: ^0.2.5
   collapsible: ^1.0.0
+  animated_clipper: ^0.2.0+2
 
   qr_flutter: ^4.0.0
   camerakit: ^0.0.78-dev1
@@ -96,7 +95,6 @@ flutter:
 
   assets:
     - assets/app/
-    - assets/animations/
     
   fonts:
     - family: Limelight

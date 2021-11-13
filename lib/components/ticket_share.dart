@@ -59,7 +59,7 @@ class _TicketShareState extends State<TicketShare> {
           key: qrKey,
           child: QrImage(
             data: widget.ticket.id!,
-            size: Get.width * 0.45,
+            size: Get.width * 0.65,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
           ),

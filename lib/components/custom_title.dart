@@ -22,7 +22,7 @@ class CustomTitle extends StatelessWidget {
       Text(
         text2,
         maxLines: 2,
-        style: Get.textTheme.headline2?.copyWith(
+        style: Get.textTheme.headline3?.copyWith(
           color: color2,
           fontFamily: 'Limelight',
           overflow: TextOverflow.ellipsis,

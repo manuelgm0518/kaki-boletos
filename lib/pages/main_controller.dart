@@ -21,10 +21,16 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
   final nameField = TextEditingController();
   final phoneField = TextEditingController();
   final seatingsField = TextEditingController(text: '1');
+  final calendarField = TextEditingController(text: '25 - Nov');
   int get seatings => int.tryParse(seatingsField.text) ?? 1;
 
-  List<Ticket> get tickets => RepositoryService.to.tickets.where((ticket) => ticket.checked == onlyChecked.value).toList()..sort((a, b) => b.soldTime.compareTo(a.soldTime));
   var onlyChecked = false.obs;
+  var filterFirstDate = false.obs;
+  var showFilters = false.obs;
+  List<Ticket> get tickets => RepositoryService.to.tickets
+      .where((ticket) => ticket.checked == onlyChecked.value && ((ticket.isFirstDay && filterFirstDate.value) || (!ticket.isFirstDay && !filterFirstDate.value)))
+      .toList()
+    ..sort((a, b) => b.soldTime.compareTo(a.soldTime));
 
   var showCamera = false.obs;
   var loadingCamera = false.obs;
@@ -40,7 +46,7 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
         if (ticket.checked) {
           Get.snackbar('Este ticket ya ha sido escaneado', 'A las ${DateFormat("hh:mmaa").format(ticket.checkedAt!)}', colorText: Colors.white, backgroundColor: kWarningColor);
         } else {
-          await ref.update(ticket.copyWith(checkedAt: DateTime.now(), checkedBy: SessionService.to.seller!.name).toMap());
+          await ref.update(ticket.copyWith(checkedAt: DateTime.now(), checkedBy: SessionService.to.seller!.id).toMap());
           Get.snackbar('Ticket escaneado correctamente', 'Cliente: ${ticket.clientName}', colorText: Colors.white, backgroundColor: kSuccessColor);
         }
       } else {
@@ -52,6 +58,12 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
 
   void setSeatings(int quantity) {
     seatingsField.value = TextEditingValue(text: quantity.toString());
+  }
+
+  bool firstDate = false;
+  void switchDates() {
+    firstDate = !firstDate;
+    calendarField.value = TextEditingValue(text: firstDate ? '25 - Nov' : '01 - Dic');
   }
 
   void clearForm() {
@@ -69,7 +81,7 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
         seatingsCount: seatings,
         clientName: nameField.text,
         clientPhone: mask.getMaskedString(phoneField.text),
-        showDate: DateTime.now(),
+        showDate: firstDate ? DateTime(2021, 11, 25) : DateTime(2021, 12, 1),
       );
       final data = await FirebaseFirestore.instance.collection('tickets').add(ticket.toMap()..remove('id'));
       Get.snackbar('Ticket creado correctamente', 'Cliente: ${ticket.clientName}', colorText: Colors.white, backgroundColor: kSuccessColor);
@@ -77,10 +89,6 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
       clearForm();
       buttonKey.currentState?.setStatus(CustomButtonStatus.IDLE);
     }
-  }
-
-  Future<void> deleteTicket(Ticket ticket) async {
-    await FirebaseFirestore.instance.doc('tickets/${ticket.id}').delete();
   }
 
   @override
