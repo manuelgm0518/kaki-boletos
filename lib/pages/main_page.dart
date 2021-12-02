@@ -2,10 +2,11 @@ import 'package:auto_animated/auto_animated.dart';
 import 'package:collapsible/collapsible.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:kaki_boletos/components/custom_button.dart';
-import 'package:kaki_boletos/components/custom_text_field.dart';
 import 'package:kaki_boletos/components/ticket_tile.dart';
 import 'package:kaki_boletos/config/app_themes.dart';
+import 'package:kaki_boletos/models/ticket.dart';
 import 'package:kaki_boletos/pages/main_controller.dart';
 import 'package:kaki_boletos/pages/scan_ticket_view.dart';
 import 'package:kaki_boletos/pages/sell_ticket_view.dart';
@@ -53,7 +54,8 @@ class MainPage extends GetView<MainController> {
             ),
           ],
           flexibleSpace: FlexibleSpaceBar(
-            background: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: [
+            background:
+                Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: [
               statusBarSpacer,
               const SizedBox(height: 60),
               kSpacerY,
@@ -87,7 +89,7 @@ class MainPage extends GetView<MainController> {
                           style: Get.textTheme.headline3?.copyWith(color: Colors.white, fontFamily: 'Limelight'),
                         ),
                         Text(
-                          '(${controller.tickets.length})',
+                          '(${controller.tickets.fold<int>(0, (previousValue, element) => previousValue + element.seatingsCount)})',
                           style: Get.textTheme.headline5?.copyWith(color: Colors.white30),
                         ).px2,
                         kSpacer,
@@ -161,62 +163,109 @@ Widget sliverList() {
   );
 }
 
+class ScannedTicket extends StatelessWidget {
+  final Ticket? ticket;
+  final ScannedTicketStatus status;
+  const ScannedTicket._(this.ticket, this.status, {Key? key}) : super(key: key);
+  static Future<dynamic> show(Ticket? ticket, ScannedTicketStatus status) async {
+    return await Get.dialog(ScannedTicket._(ticket, status).centered().p4);
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: status.color,
+        borderRadius: kRoundedBorder,
+      ),
+      padding: kPadding4,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
+        Text(
+          status.message,
+          style: Get.textTheme.headline4?.copyWith(color: Colors.white, fontFamily: 'LimeLight'),
+          textAlign: TextAlign.center,
+        ),
+        kSpacerY,
+        if (status == ScannedTicketStatus.success) ...[
+          Text('Asientos:', textAlign: TextAlign.center, style: Get.textTheme.headline5?.copyWith(color: Colors.white)),
+          Text(
+            ticket!.seatingsCount.toString().padLeft(2, '0'),
+            style: Get.textTheme.headline2?.copyWith(color: Colors.white),
+          ).left([
+            const Icon(UniconsLine.ticket, color: Colors.white, size: 40).pr2,
+          ], mainAxisAlignment: MainAxisAlignment.center),
+          Text('Función:', textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white)).pr.right([
+            Text(DateFormat('dd-MM-yyyy').format(ticket!.showDate),
+                textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white, fontWeight: FontWeight.normal))
+          ], mainAxisAlignment: MainAxisAlignment.center),
+          kSpacerY2,
+          Text('Cliente:', textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white)).pr.right([
+            Text(ticket!.clientName,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Get.textTheme.headline6?.copyWith(color: Colors.white, fontWeight: FontWeight.normal))
+          ], mainAxisAlignment: MainAxisAlignment.center),
+        ] else if (status == ScannedTicketStatus.alreadyChecked) ...[
+          Text('Función:', textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white)).pr.right([
+            Text(DateFormat('dd-MM-yyyy').format(ticket!.showDate),
+                textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white, fontWeight: FontWeight.normal))
+          ], mainAxisAlignment: MainAxisAlignment.center),
+          kSpacerY2,
+          Text('Cliente:', textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white)).pr.right([
+            Text(ticket!.clientName, textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white, fontWeight: FontWeight.normal))
+                .flexible()
+          ], mainAxisAlignment: MainAxisAlignment.center),
+          kSpacerY3,
+          Text('Escaneado:', textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white)),
+          Text("El día ${DateFormat('dd-MM-yyyy (hh:mm a)').format(ticket!.checkedAt!)}",
+              textAlign: TextAlign.center, style: Get.textTheme.headline6?.copyWith(color: Colors.white, fontWeight: FontWeight.normal)),
+          Text(
+            "Por ${ticket!.sellerName.capitalize}",
+            style: Get.textTheme.headline6?.copyWith(color: Colors.white, fontWeight: FontWeight.normal),
+            textAlign: TextAlign.center,
+          ),
+        ] else ...[
+          Text('Intenta escanearlo otra vez, de otro modo, este no es un código válido',
+              style: Get.textTheme.headline6?.copyWith(color: Colors.white, fontWeight: FontWeight.normal), textAlign: TextAlign.center),
+        ],
+        kSpacerY,
+        const Divider(
+          color: Colors.white,
+          thickness: 1,
+          height: 0,
+        ).py4,
+        CustomButton.elevated(
+          child: Text('Aceptar', style: TextStyle(color: status.color)),
+          color: Colors.white,
+          onPressed: () => Get.back(),
+        ),
+      ]),
+    );
+  }
+}
 
+enum ScannedTicketStatus { alreadyChecked, invalid, success }
 
+extension ScannedTicketStatusExtension on ScannedTicketStatus {
+  Color get color {
+    switch (this) {
+      case ScannedTicketStatus.success:
+        return kSuccessColor;
+      case ScannedTicketStatus.invalid:
+        return kErrorColor;
+      case ScannedTicketStatus.alreadyChecked:
+        return kWarningColor;
+    }
+  }
 
-
-
-
-
-
-// return DefaultTabController(
-//   length: 3,
-//   child: Scaffold(
-//     resizeToAvoidBottomInset: false,
-//     backgroundColor: kPrimaryColor,
-//     body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.max, children: [
-//       Container(
-//         color: Colors.white,
-//         child: Column(children: [
-//           Row(children: [
-//             Text(
-//               SessionService.to.seller!.name,
-//               style: Get.textTheme.headline5,
-//             ),
-//             kSpacer,
-//             IconButton(
-//               icon: const Icon(UniconsLine.sign_out_alt),
-//               onPressed: () => controller.logOut(),
-//             )
-//           ]).pxy(4, 3).safeArea(),
-//           const TabBarView(children: [
-//             SellPage(),
-//             AssistancePage(),
-//             SoldPage(),
-//           ]).expanded(),
-//         ]),
-//       ).rounded().expanded(),
-//       TabBar(
-//         padding: kPadding4,
-//         labelColor: Colors.white,
-//         unselectedLabelColor: Colors.white,
-//         tabs: const [
-//           Tab(icon: Icon(UniconsLine.ticket)),
-//           Tab(icon: Icon(UniconsLine.user_check)),
-//           Tab(icon: Icon(UniconsLine.bill)),
-//         ],
-//         indicator: RectangularIndicator(
-//           color: Colors.white.withOpacity(0.25),
-//           topLeftRadius: kBorderRadius,
-//           topRightRadius: kBorderRadius,
-//           bottomLeftRadius: kBorderRadius,
-//           bottomRightRadius: kBorderRadius,
-//           paintingStyle: PaintingStyle.fill,
-//         ),
-//       ),
-//     ]),
-//   ),
-// );
-//   }
-// }
+  String get message {
+    switch (this) {
+      case ScannedTicketStatus.success:
+        return 'Boleto escaneado correctamente';
+      case ScannedTicketStatus.invalid:
+        return 'Boleto no reconocido';
+      case ScannedTicketStatus.alreadyChecked:
+        return 'Este boleto ya ha sido escaneado';
+    }
+  }
+}

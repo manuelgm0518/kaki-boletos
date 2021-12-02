@@ -7,6 +7,7 @@ import 'package:kaki_boletos/components/custom_button.dart';
 import 'package:kaki_boletos/components/ticket_share.dart';
 import 'package:kaki_boletos/config/app_themes.dart';
 import 'package:kaki_boletos/models/ticket.dart';
+import 'package:kaki_boletos/pages/main_page.dart';
 import 'package:kaki_boletos/utils/format_utils.dart';
 import 'package:kaki_boletos/utils/ui_utils.dart';
 import 'package:unicons/unicons.dart';
@@ -55,7 +56,8 @@ class _TicketTileState extends State<TicketTile> {
         child: Column(children: [
           Row(children: [
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text(widget.ticket.clientName, style: Get.textTheme.headline6, overflow: expanded ? TextOverflow.visible : TextOverflow.ellipsis, softWrap: expanded),
+              Text(widget.ticket.clientName,
+                  style: Get.textTheme.headline6, overflow: expanded ? TextOverflow.visible : TextOverflow.ellipsis, softWrap: expanded),
               Text(DateFormat('dd / MM / yy').format(widget.ticket.showDate), style: const TextStyle(color: kPrimaryColor)).left([
                 const Icon(UniconsLine.calendar_alt, color: kPrimaryColor, size: 18).pr2,
               ]).py1,

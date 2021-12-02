@@ -9,6 +9,7 @@ import 'package:kaki_boletos/components/ticket_share.dart';
 import 'package:kaki_boletos/config/app_pages.dart';
 import 'package:kaki_boletos/config/app_themes.dart';
 import 'package:kaki_boletos/models/ticket.dart';
+import 'package:kaki_boletos/pages/main_page.dart';
 import 'package:kaki_boletos/services/repository_service.dart';
 import 'package:kaki_boletos/services/session_service.dart';
 
@@ -28,9 +29,11 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
   var filterFirstDate = false.obs;
   var showFilters = false.obs;
   List<Ticket> get tickets => RepositoryService.to.tickets
-      .where((ticket) => ticket.checked == onlyChecked.value && ((ticket.isFirstDay && filterFirstDate.value) || (!ticket.isFirstDay && !filterFirstDate.value)))
+      .where(
+          (ticket) => ticket.checked == onlyChecked.value && ((ticket.isFirstDay && filterFirstDate.value) || (!ticket.isFirstDay && !filterFirstDate.value)))
       .toList()
     ..sort((a, b) => b.soldTime.compareTo(a.soldTime));
+  int get soldSeatings => tickets.fold(0, (previousValue, element) => previousValue + element.seatingsCount);
 
   var showCamera = false.obs;
   var loadingCamera = false.obs;
@@ -44,13 +47,17 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
       if (data.exists) {
         final ticket = Ticket.fromMap({'id': data.id, ...data.data()!});
         if (ticket.checked) {
-          Get.snackbar('Este ticket ya ha sido escaneado', 'A las ${DateFormat("hh:mmaa").format(ticket.checkedAt!)}', colorText: Colors.white, backgroundColor: kWarningColor);
+          await ScannedTicket.show(ticket, ScannedTicketStatus.alreadyChecked);
+          // Get.snackbar('Este ticket ya ha sido escaneado', 'A las ${DateFormat("hh:mmaa").format(ticket.checkedAt!)}',
+          //     colorText: Colors.white, backgroundColor: kWarningColor);
         } else {
           await ref.update(ticket.copyWith(checkedAt: DateTime.now(), checkedBy: SessionService.to.seller!.id).toMap());
-          Get.snackbar('Ticket escaneado correctamente', 'Cliente: ${ticket.clientName}', colorText: Colors.white, backgroundColor: kSuccessColor);
+          await ScannedTicket.show(ticket, ScannedTicketStatus.success);
+          //Get.snackbar('Ticket escaneado correctamente', 'Cliente: ${ticket.clientName}', colorText: Colors.white, backgroundColor: kSuccessColor);
         }
       } else {
-        Get.snackbar('Boleto no válido', 'Intenta escanearlo de nuevo', colorText: Colors.white, backgroundColor: kErrorColor);
+        await ScannedTicket.show(null, ScannedTicketStatus.invalid);
+        //Get.snackbar('Boleto no válido', 'Intenta escanearlo de nuevo', colorText: Colors.white, backgroundColor: kErrorColor);
       }
       loadingCamera(false);
     }
@@ -60,7 +67,7 @@ class MainController extends GetxController with SingleGetTickerProviderMixin {
     seatingsField.value = TextEditingValue(text: quantity.toString());
   }
 
-  bool firstDate = false;
+  bool firstDate = true;
   void switchDates() {
     firstDate = !firstDate;
     calendarField.value = TextEditingValue(text: firstDate ? '25 - Nov' : '01 - Dic');
